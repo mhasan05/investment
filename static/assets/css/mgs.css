@@ -1,0 +1,10 @@
+.mgs_style{
+    height: 500px;
+    overflow-y: auto;
+    }
+
+
+    .submit_mgs{
+        padding:10px;
+        padding-bottom: 20px;
+    }

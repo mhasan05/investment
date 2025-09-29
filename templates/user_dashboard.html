@@ -1,0 +1,1407 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary: #0F172A;
+            --secondary: #1E293B;
+            --accent: #2563EB;
+            --accent-hover: #1D4ED8;
+            --success: #059669;
+            --success-hover: #047857;
+            --warning: #F59E0B;
+            --danger: #DC2626;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --text-tertiary: #94A3B8;
+            --border: #E2E8F0;
+            --border-light: #F1F5F9;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --bg-tertiary: #F1F5F9;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Header Section */
+        .dashboard-header {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .dashboard-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .dashboard-header p {
+            color: var(--text-secondary);
+            font-size: 1.0625rem;
+            margin-bottom: 1.75rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.75px;
+            color: var(--text-secondary);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stat-icon.wallet {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--accent);
+        }
+
+        .stat-icon.investment {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--success);
+        }
+
+        .stat-icon.profit {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.neutral {
+            color: var(--text-secondary);
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.8fr 1.2fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .content-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            padding: 1.75rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-primary);
+        }
+
+        .card-header h2 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Investment Cards */
+        .investment-item {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .investment-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .investment-item:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .investment-item.ready {
+            background: linear-gradient(135deg, rgba(5, 150, 105, 0.05) 0%, rgba(5, 150, 105, 0.02) 100%);
+            border-color: var(--success);
+        }
+
+        .investment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .investment-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 8px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-secondary {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        .investment-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .investment-stat {
+            text-align: center;
+        }
+
+        .investment-stat-label {
+            font-size: 0.6875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.375rem;
+            letter-spacing: 0.5px;
+        }
+
+        .investment-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .investment-stat-value.success {
+            color: var(--success);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar-custom {
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.primary {
+            background: var(--accent);
+        }
+
+        /* Plan Cards */
+        .plan-card {
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .plan-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .plan-card:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .plan-card.featured {
+            border-color: var(--accent);
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .plan-badge {
+            position: absolute;
+            top: -12px;
+            right: 1.5rem;
+            background: var(--accent);
+            color: white;
+            padding: 0.375rem 0.875rem;
+            border-radius: 8px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .plan-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .plan-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+        }
+
+        .plan-roi {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.025em;
+        }
+
+        .plan-roi span {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .plan-details {
+            margin-bottom: 1.5rem;
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .plan-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.875rem;
+        }
+
+        .plan-detail-row:not(:last-child) {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .plan-detail-label {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .plan-detail-value {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.75rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            letter-spacing: -0.0125em;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white !important;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary) !important;
+            border-color: var(--text-secondary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white !important;
+        }
+
+        .btn-success:hover {
+            background: var(--success-hover);
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary) !important;
+            border: 2px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-primary);
+            background: var(--bg-tertiary);
+            color: var(--text-primary) !important;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.875rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1.25rem;
+            font-size: 0.875rem;
+        }
+
+        /* Transaction Table */
+        .transaction-table {
+            width: 100%;
+        }
+
+        .transaction-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+        }
+
+        .transaction-row:hover {
+            background: var(--bg-secondary);
+        }
+
+        .transaction-row:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .transaction-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .transaction-icon.deposit {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--success);
+        }
+
+        .transaction-icon.investment {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--accent);
+        }
+
+        .transaction-icon.withdrawal {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--danger);
+        }
+
+        .transaction-details h3 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.0125em;
+        }
+
+        .transaction-date {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .transaction-amount {
+            text-align: right;
+        }
+
+        .transaction-value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.375rem;
+            letter-spacing: -0.025em;
+        }
+
+        .transaction-value.positive {
+            color: var(--success);
+        }
+
+        .transaction-value.negative {
+            color: var(--danger);
+        }
+
+        .transaction-value.neutral {
+            color: var(--text-primary);
+        }
+
+        .transaction-status {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.025em;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 2rem 2rem;
+            border-top: none;
+        }
+
+        .modal-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.625rem;
+            display: block;
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group-text {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+            padding: 0.875rem 1rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .input-group .form-control {
+            border-radius: 0 10px 10px 0;
+            border-left: none;
+            margin-bottom: 0;
+        }
+
+        .input-group .form-control:focus {
+            border-left: 2px solid var(--accent);
+        }
+
+        .alert-info {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .alert-success {
+            background: rgba(5, 150, 105, 0.1);
+            border: 1px solid rgba(5, 150, 105, 0.2);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .alert-warning {
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .modal-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .modal-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9375rem;
+        }
+
+        .modal-list li:last-child {
+            border-bottom: none;
+        }
+
+        .modal-list-label {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .modal-list-value {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 1rem;
+            }
+
+            .dashboard-header {
+                padding: 1.75rem;
+            }
+
+            .dashboard-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .investment-stats {
+                grid-template-columns: 1fr;
+                gap: 0.875rem;
+            }
+
+            .transaction-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1.25rem 1.5rem;
+            }
+
+            .transaction-amount {
+                text-align: left;
+                width: 100%;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .modal-header {
+                padding: 1.5rem 1.5rem 0.75rem;
+            }
+
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .modal-footer {
+                padding: 0.75rem 1.5rem 1.5rem;
+                flex-direction: column;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1>Welcome back, John Doe</h1>
+            <p>Your portfolio is performing strong. Here's your financial overview.</p>
+            <div class="btn-group">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#investModal">
+                    <i class="bi bi-plus-circle"></i>
+                    New Investment
+                </button>
+                <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#depositModal">
+                    <i class="bi bi-wallet2"></i>
+                    Fund Account
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">Available Balance</div>
+                    <div class="stat-icon wallet">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                </div>
+                <div class="stat-value">$5,200.00</div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-up"></i> $500 last deposit
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">Investment Value</div>
+                    <div class="stat-icon investment">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                </div>
+                <div class="stat-value">$3,500.00</div>
+                <div class="stat-change neutral">3 Active Portfolios</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">Total Profit</div>
+                    <div class="stat-icon profit">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+                <div class="stat-value">$720.00</div>
+                <div class="stat-change positive">
+                    <i class="bi bi-arrow-up"></i> +13.2% ROI
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Active Investments -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>Active Investments</h2>
+                    <a href="#" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    <!-- Investment 1 - Ready -->
+                    <div class="investment-item ready">
+                        <div class="investment-header">
+                            <div class="investment-title">Monthly Plan</div>
+                            <span class="badge badge-success">Ready to Cash Out</span>
+                        </div>
+                        <div class="investment-stats">
+                            <div class="investment-stat">
+                                <div class="investment-stat-label">Principal</div>
+                                <div class="investment-stat-value">$1,000</div>
+                            </div>
+                            <div class="investment-stat">
+                                <div class="investment-stat-label">Total Return</div>
+                                <div class="investment-stat-value success">+$120</div>
+                            </div>
+                            <div class="investment-stat">
+                                <div class="investment-stat-label">Progress</div>
+                                <div class="investment-stat-value">70%</div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar-custom">
+                                <div class="progress-fill" style="width: 70%"></div>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#withdrawModal">
+                                <i class="bi bi-box-arrow-down"></i>
+                                Withdraw
+                            </button>
+                            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#investModal">
+                                <i class="bi bi-arrow-repeat"></i>
+                                Reinvest
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Investment 2 - Locked -->
+                    <div class="investment-item">
+                        <div class="investment-header">
+                            <div class="investment-title">6 Months Plan</div>
+                            <span class="badge badge-secondary">Locked</span>
+                        </div>
+                        <div class="investment-stats">
+                            <div class="investment-stat">
+                                <div class="investment-stat-label">Principal</div>
+                                <div class="investment-stat-value">$1,500</div>
+                            </div>
+                            <div class="investment-stat">
+                                <div class="investment-stat-label">Est. Return</div>
+                                <div class="investment-stat-value">+$300</div>
+                            </div>
+                            <div class="investment-stat">
+                                <div class="investment-stat-label">Progress</div>
+                                <div class="investment-stat-value">50%</div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar-custom">
+                                <div class="progress-fill primary" style="width: 50%"></div>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#planDetailsModal">
+                                <i class="bi bi-info-circle"></i>
+                                Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Investment 3 - Locked -->
+                    <div class="investment-item">
+                        <div class="investment-header">
+                            <div class="investment-title">1 Year Plan</div>
+                            <span class="badge badge-secondary">Locked</span>
+                        </div>
+                        <div class="investment-stats">
+                            <div class="investment-stat">
+                                <div class="investment-stat-label">Principal</div>
+                                <div class="investment-stat-value">$1,000</div>
+                            </div>
+                            <div class="investment-stat">
+                                <div class="investment-stat-label">Est. Return</div>
+                                <div class="investment-stat-value">+$300</div>
+                            </div>
+                            <div class="investment-stat">
+                                <div class="investment-stat-label">Progress</div>
+                                <div class="investment-stat-value">25%</div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar-custom">
+                                <div class="progress-fill primary" style="width: 25%"></div>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#planDetailsModal2">
+                                <i class="bi bi-info-circle"></i>
+                                Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investment Plans -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>Investment Plans</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Plan 1 -->
+                    <div class="plan-card">
+                        <div class="plan-title">Monthly Plan</div>
+                        <div class="plan-description">High liquidity, flexible terms</div>
+                        <div class="plan-roi">12% <span>ROI</span></div>
+                        <div class="plan-details">
+                            <div class="plan-detail-row">
+                                <span class="plan-detail-label">Min. Investment</span>
+                                <span class="plan-detail-value">$100</span>
+                            </div>
+                            <div class="plan-detail-row">
+                                <span class="plan-detail-label">Duration</span>
+                                <span class="plan-detail-value">30 Days</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block" data-bs-toggle="modal" data-bs-target="#investModal">
+                            <i class="bi bi-arrow-right-circle"></i>
+                            Choose Plan
+                        </button>
+                    </div>
+
+                    <!-- Plan 2 - Featured -->
+                    <div class="plan-card featured">
+                        <span class="plan-badge">
+                            <i class="bi bi-star-fill"></i> Best Value
+                        </span>
+                        <div class="plan-title">6 Months Plan</div>
+                        <div class="plan-description">Optimal balance of risk and reward</div>
+                        <div class="plan-roi">20% <span>ROI</span></div>
+                        <div class="plan-details">
+                            <div class="plan-detail-row">
+                                <span class="plan-detail-label">Min. Investment</span>
+                                <span class="plan-detail-value">$500</span>
+                            </div>
+                            <div class="plan-detail-row">
+                                <span class="plan-detail-label">Duration</span>
+                                <span class="plan-detail-value">180 Days</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block" data-bs-toggle="modal" data-bs-target="#investModal">
+                            <i class="bi bi-arrow-right-circle"></i>
+                            Invest Now
+                        </button>
+                    </div>
+
+                    <!-- Plan 3 -->
+                    <div class="plan-card">
+                        <div class="plan-title">1 Year Plan</div>
+                        <div class="plan-description">Maximum returns, long-term growth</div>
+                        <div class="plan-roi">30% <span>ROI</span></div>
+                        <div class="plan-details">
+                            <div class="plan-detail-row">
+                                <span class="plan-detail-label">Min. Investment</span>
+                                <span class="plan-detail-value">$1,000</span>
+                            </div>
+                            <div class="plan-detail-row">
+                                <span class="plan-detail-label">Duration</span>
+                                <span class="plan-detail-value">365 Days</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block" data-bs-toggle="modal" data-bs-target="#investModal">
+                            <i class="bi bi-arrow-right-circle"></i>
+                            Choose Plan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2>Recent Transactions</h2>
+                <a href="#" class="btn btn-secondary btn-sm">
+                    Full History
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="transaction-table">
+                <div class="transaction-row">
+                    <div class="transaction-info">
+                        <div class="transaction-icon deposit">
+                            <i class="bi bi-arrow-down-circle-fill"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <h3>Deposit via Card</h3>
+                            <div class="transaction-date">20 Sep, 2025</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount">
+                        <div class="transaction-value positive">+$500.00</div>
+                        <div class="transaction-status">Completed</div>
+                    </div>
+                </div>
+
+                <div class="transaction-row">
+                    <div class="transaction-info">
+                        <div class="transaction-icon investment">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <h3>Investment: Monthly Plan</h3>
+                            <div class="transaction-date">22 Sep, 2025</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount">
+                        <div class="transaction-value neutral">$1,000.00</div>
+                        <div class="transaction-status">Allocated</div>
+                    </div>
+                </div>
+
+                <div class="transaction-row">
+                    <div class="transaction-info">
+                        <div class="transaction-icon withdrawal">
+                            <i class="bi bi-arrow-up-circle-fill"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <h3>Withdrawal Request</h3>
+                            <div class="transaction-date">28 Sep, 2025</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount">
+                        <div class="transaction-value negative">-$300.00</div>
+                        <div class="transaction-status">Pending</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="depositModalLabel">
+                        <i class="bi bi-arrow-down-circle-fill" style="color: var(--accent);"></i>
+                        Deposit Funds
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-subtitle">Choose a method and enter the amount you wish to add to your main balance.</p>
+                    
+                    <div>
+                        <label for="depositAmount" class="form-label">Deposit Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="depositAmount" placeholder="Min. $100" value="500.00">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="paymentMethod" class="form-label">Payment Method</label>
+                        <select class="form-select" id="paymentMethod">
+                            <option selected>Bank Transfer (Swift)</option>
+                            <option>Credit/Debit Card (Visa/Master)</option>
+                            <option>Crypto Wallet (USDT)</option>
+                        </select>
+                    </div>
+
+                    <div class="alert-info">
+                        <i class="bi bi-info-circle-fill" style="color: var(--accent); font-size: 1.25rem; flex-shrink: 0;"></i>
+                        <span>Processing time: 1-2 business days.</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Confirm Deposit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Modal -->
+    <div class="modal fade" id="investModal" tabindex="-1" aria-labelledby="investModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="investModalLabel">
+                        <i class="bi bi-plus-circle-fill" style="color: var(--accent);"></i>
+                        New Investment
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-subtitle">Finalize your investment details using funds from your Main Balance ($5,200.00).</p>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="investmentPlan" class="form-label">Select Plan</label>
+                        <select class="form-select" id="investmentPlan" onchange="updateInvestmentDetails(this)">
+                            <option value="6months" selected>6 Months Plan (20% ROI) - Recommended</option>
+                            <option value="monthly">Monthly Plan (12% ROI)</option>
+                            <option value="1year">1 Year Plan (30% ROI)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="investAmount" class="form-label">Investment Capital</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="investAmount" placeholder="Min. $500 for this plan" value="1500.00" oninput="calculateReturn()">
+                        </div>
+                    </div>
+
+                    <div class="alert-success">
+                        <i class="bi bi-graph-up-arrow" style="color: var(--success); font-size: 1.25rem; flex-shrink: 0;"></i>
+                        <span id="estimatedReturn">Estimated Return: <strong>$300.00</strong> at maturity.</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Confirm Investment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div class="modal fade" id="withdrawModal" tabindex="-1" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="withdrawModalLabel">
+                        <i class="bi bi-wallet2" style="color: var(--success);"></i>
+                        Withdraw Earnings
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-subtitle">Withdrawable Balance: <strong>$1,120.00</strong> (Main Balance + Available Earnings)</p>
+                    
+                    <div>
+                        <label for="withdrawAmount" class="form-label">Withdraw Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="withdrawAmount" placeholder="Max. $1,120.00" value="500.00" oninput="calculateFee()">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="destinationAccount" class="form-label">Destination Account</label>
+                        <select class="form-select" id="destinationAccount">
+                            <option selected>Bank Account (Ending 4567)</option>
+                            <option>External Crypto Wallet</option>
+                        </select>
+                    </div>
+
+                    <div class="alert-warning">
+                        <i class="bi bi-x-octagon-fill" style="color: var(--danger); font-size: 1.25rem; flex-shrink: 0;"></i>
+                        <span id="withdrawFee">A 2.5% withdrawal fee applies ($12.50 for $500).</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success">Process Withdrawal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan Details Modal -->
+    <div class="modal fade" id="planDetailsModal" tabindex="-1" aria-labelledby="planDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="planDetailsModalLabel">
+                        <i class="bi bi-info-circle-fill" style="color: var(--accent);"></i>
+                        Plan Details: 6 Months
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-subtitle">Detailed information regarding your <strong>6 Months Plan</strong> investment.</p>
+                    
+                    <ul class="modal-list">
+                        <li>
+                            <span class="modal-list-label">Investment Date:</span>
+                            <span class="modal-list-value">15 March, 2025</span>
+                        </li>
+                        <li>
+                            <span class="modal-list-label">Maturity Date:</span>
+                            <span class="modal-list-value" style="color: var(--accent);">15 September, 2025</span>
+                        </li>
+                        <li>
+                            <span class="modal-list-label">Principal Amount:</span>
+                            <span class="modal-list-value">$1,500.00</span>
+                        </li>
+                        <li>
+                            <span class="modal-list-label">Estimated Total Return:</span>
+                            <span class="modal-list-value" style="color: var(--success);">~$300.00</span>
+                        </li>
+                        <li>
+                            <span class="modal-list-label">Status:</span>
+                            <span class="badge badge-secondary">Locked</span>
+                        </li>
+                    </ul>
+
+                    <div class="alert-info">
+                        <i class="bi bi-lock-fill" style="color: var(--accent); font-size: 1.25rem; flex-shrink: 0;"></i>
+                        <span>The principal and earnings are locked until the maturity date (15 Sep, 2025).</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan Details Modal 2 (1 Year Plan) -->
+    <div class="modal fade" id="planDetailsModal2" tabindex="-1" aria-labelledby="planDetailsModalLabel2" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="planDetailsModalLabel2">
+                        <i class="bi bi-info-circle-fill" style="color: var(--accent);"></i>
+                        Plan Details: 1 Year
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-subtitle">Detailed information regarding your <strong>1 Year Plan</strong> investment.</p>
+                    
+                    <ul class="modal-list">
+                        <li>
+                            <span class="modal-list-label">Investment Date:</span>
+                            <span class="modal-list-value">1 July, 2025</span>
+                        </li>
+                        <li>
+                            <span class="modal-list-label">Maturity Date:</span>
+                            <span class="modal-list-value" style="color: var(--accent);">1 July, 2026</span>
+                        </li>
+                        <li>
+                            <span class="modal-list-label">Principal Amount:</span>
+                            <span class="modal-list-value">$1,000.00</span>
+                        </li>
+                        <li>
+                            <span class="modal-list-label">Estimated Total Return:</span>
+                            <span class="modal-list-value" style="color: var(--success);">~$300.00</span>
+                        </li>
+                        <li>
+                            <span class="modal-list-label">Status:</span>
+                            <span class="badge badge-secondary">Locked</span>
+                        </li>
+                    </ul>
+
+                    <div class="alert-info">
+                        <i class="bi bi-lock-fill" style="color: var(--accent); font-size: 1.25rem; flex-shrink: 0;"></i>
+                        <span>The principal and earnings are locked until the maturity date (1 July, 2026).</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Investment plan details
+        const planDetails = {
+            'monthly': { roi: 0.12, minInvest: 100, duration: '30 days' },
+            '6months': { roi: 0.20, minInvest: 500, duration: '180 days' },
+            '1year': { roi: 0.30, minInvest: 1000, duration: '365 days' }
+        };
+
+        // Update investment details when plan changes
+        function updateInvestmentDetails(select) {
+            const plan = select.value;
+            const details = planDetails[plan];
+            const investInput = document.getElementById('investAmount');
+            
+            // Update placeholder
+            investInput.placeholder = `Min. ${details.minInvest} for this plan`;
+            
+            // Update minimum value
+            if (parseFloat(investInput.value) < details.minInvest) {
+                investInput.value = details.minInvest.toFixed(2);
+            }
+            
+            calculateReturn();
+        }
+
+        // Calculate estimated return
+        function calculateReturn() {
+            const select = document.getElementById('investmentPlan');
+            const plan = select.value;
+            const details = planDetails[plan];
+            const amount = parseFloat(document.getElementById('investAmount').value) || 0;
+            
+            const returnAmount = (amount * details.roi).toFixed(2);
+            const returnText = document.getElementById('estimatedReturn');
+            returnText.innerHTML = `Estimated Return: <strong>${returnAmount}</strong> at maturity (${details.duration}).`;
+        }
+
+        // Calculate withdrawal fee
+        function calculateFee() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
+            const fee = (amount * 0.025).toFixed(2);
+            const feeText = document.getElementById('withdrawFee');
+            feeText.textContent = `A 2.5% withdrawal fee applies (${fee} for ${amount.toFixed(2)}).`;
+        }
+    </script>
+</body>
+</html>
+{% endblock body %}

@@ -1,0 +1,45 @@
+{% extends 'user/dashboard/base.html' %}
+{% block body %}
+{% load static %}
+
+<div class="card">
+    <h5 class="card-header">Withdraw History</h5>
+    <div class="table-responsive text-nowrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>TRX ID</th>
+            <th>Withdraw Method</th>
+            <th>Withdraw Amount</th>
+            <th>Withdraw Fee</th>
+            <th>Payable Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody class="table-border-bottom-0">
+          {% for x in all_withdraw_req %}
+          {% if x.user_id == user.user_id %}
+          <tr>
+            <td>{{x.withdraw_trx_id}}</td>
+            <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>{{x.withdraw_method}}</strong></td>
+            <td>{{x.withdraw_amount}}</td>
+            <td>{{x.withdraw_fee}}</td>
+            <td>{{x.payable_amount}}</td>
+            {% if x.current_status == 'Pending' %}
+            <td class="text-warning"><strong>Pending</strong></td>
+            {% elif x.current_status == 'Approved' %}
+            <td class="text-success"><strong>Approved</strong></td>
+            {% elif x.current_status == 'Refund' %}
+            <td class="text-warning"><strong>Refund</strong></td>
+            {% elif x.current_status == 'Rejected' %}
+            <td class="text-danger"><strong>Rejected</strong></td>
+            {% endif %}
+          {% endif %}
+          {% endfor %}
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% endblock body %}

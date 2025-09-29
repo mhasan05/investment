@@ -1,0 +1,88 @@
+{% extends 'user/dashboard/base.html' %}
+{% block body %}
+{% load static %}
+
+<div class="card">
+    <h5 class="card-header">Withdraw History</h5>
+    <div class="table-responsive text-nowrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Transaction ID</th>
+                    <th>Withdraw Method</th>
+                    <th>Withdraw Amount</th>
+                    <th>Withdraw Fee</th>
+                    <th>Receivable Amount</th>
+                    <th>Status</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                {% for x in all_withdraw_req %}
+                {% if x.user_id == user.user_id %}
+                <tr>
+                    <td>{{ x.created_on|date:"j M, Y h:i A" }}</td>
+                    <td>TRX{{x.withdraw_trx_id}}</td>
+                    <td><strong>{{x.withdraw_method}}</strong></td>
+                    <td>{{x.withdraw_amount}}</td>
+                    <td>{{x.withdraw_fee}}</td>
+                    <td>{{x.payable_amount}}</td>
+                    <td class="{% if x.current_status == 'Pending' %}text-warning{% elif x.current_status == 'Approved' %}text-success{% elif x.current_status == 'Rejected' %}text-danger{% else %}text-muted{% endif %}">
+                        <strong>{{ x.current_status }}</strong>
+                    </td>
+                    <td>
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#withdrawModal{{ x.withdraw_trx_id }}">
+                            <i class="fas fa-eye text-primary" title="View"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODALS RENDERED OUTSIDE THE TABLE -->
+{% for x in all_withdraw_req %}
+{% if x.user_id == user.user_id %}
+<div class="modal fade" id="withdrawModal{{ x.withdraw_trx_id }}" tabindex="-1" aria-labelledby="withdrawModalLabel{{ x.withdraw_trx_id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: none;">
+            <div class="modal-header" style="background-color:rgb(238, 43, 72); border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                <h5 class="modal-title" id="withdrawModalLabel{{ x.withdraw_trx_id }}" style="color: white; font-weight: 600;">Withdrawal Details</h5>
+            </div>
+            <div class="modal-body" style="padding: 20px; font-family: 'Segoe UI', sans-serif; font-size: 15px;">
+                <div style="margin-bottom: 12px;">
+                    <strong>Transaction ID:</strong>
+                    <span style="float: right; color: #6c757d;">TRX{{ x.withdraw_trx_id }}</span>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <strong>Amount:</strong>
+                    <span style="float: right; color: green;">{{ x.withdraw_amount }} DOGE</span>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <strong>Wallet Address:</strong>
+                    <span style="float: right; color: #6c757d;">{{ x.wallet_address|slice:":7" }}XXXXXX</span>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <strong>Status:</strong>
+                    <span style="float: right; text-transform: capitalize;">{{ x.current_status }}</span>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <strong>Date:</strong>
+                    <span style="float: right;">{{ x.created_on|date:"j M, Y h:i A" }}</span>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+            <div class="modal-footer" style="border-top: none; padding: 15px;">
+                <button type="button" class="btn btn-secondary" style="border-radius: 20px; padding: 6px 20px;" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock body %}
